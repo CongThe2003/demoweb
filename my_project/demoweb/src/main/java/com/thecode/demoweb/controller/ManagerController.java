@@ -1,17 +1,22 @@
 package com.thecode.demoweb.controller;
 
+import com.thecode.demoweb.dao.UserDao;
 import com.thecode.demoweb.entity.Job;
 import com.thecode.demoweb.entity.User;
 import com.thecode.demoweb.service.JobService;
 import com.thecode.demoweb.service.JobServiceImpl;
-import com.thecode.demoweb.user.WebUser;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,15 +26,25 @@ public class ManagerController {
 
     private final JobService jobService;
 
+    @Autowired
+    private UserDao userDao;
+
+
     public ManagerController(JobService theJobService) {
         this.jobService = theJobService;
     }
 
     @GetMapping("/manager-home")
-    public String managerHome(Model theModel) {
-        List<Job> theJob = jobService.findAll();
+    public String managerHome(Model theModel, @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo) {
+        // Long idUser = getCurrentId();
+
+        // List<Job> theJob = jobService.findAll();
+
+        Page<Job> theJob = jobService.getAllPage(pageNo);
 
         // add to the spring model
+        theModel.addAttribute("totalPage",theJob.getTotalPages());
+        theModel.addAttribute("currentPage",pageNo);
         theModel.addAttribute("jobs", theJob);
         return "manager/manager-form";
     }
@@ -45,10 +60,10 @@ public class ManagerController {
     }
 
     @GetMapping("/showFormForUpdate")
-    public String showFormForUpdate(@RequestParam("id") int theId, Model theModel){
+    public String showFormForUpdate(@RequestParam("id") Long theId, Model theModel){
 
         // get the job from the data
-        Optional<Job> theJob = jobService.findById(theId);
+        List<Job> theJob = jobService.findById(theId);
 
         // set user in the model to prepopulate the form
         theModel.addAttribute("jobs", theJob);
@@ -92,7 +107,24 @@ public class ManagerController {
     @GetMapping("/search")
     public String searchJobs(@RequestParam String searchTerm, Model model) {
         List<Job> searchResults = jobService.findByTitleContainingOrContentContaining(searchTerm,searchTerm);
-        model.addAttribute("jobs", searchResults);
+        
+        List<Job> jobForUser = new ArrayList<>();
+
+        for (Job temp:searchResults) {
+            if (temp.getIdUser() == getCurrentId()){
+                jobForUser.add(temp);
+            }
+        }
+        model.addAttribute("jobs", jobForUser);
         return "/manager/view-result"; // Trả về tên view để hiển thị kết quả tìm kiếm
+    }
+
+    public Long getCurrentId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+        System.out.println(username);
+
+        User theUser = userDao.findByUserName(username);
+        return theUser.getId();
     }
 }

@@ -48,6 +48,42 @@
         .table-responsive {
             overflow-x: auto; /* Tạo thanh cuộn ngang khi cần */
         }
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 20px;
+        }
+
+        .pagination a {
+            margin: 0 5px;
+            padding: 8px 16px;
+            text-decoration: none;
+            color: #007bff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .pagination a:hover {
+            background-color: #f0f0f0;
+            border-color: #007bff;
+        }
+
+        .pagination a.active {
+            background-color: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+
+        .pagination a.disabled {
+            pointer-events: none;
+            color: #ccc;
+        }
+        .active a {
+            background-color: #007bff;
+            color: white;
+        }
+
     </style>
 </head>
 <body>
@@ -119,8 +155,19 @@
                             <a th:href="@{/manager/showFormForUpdate(id=${tempJob.id})}" class="btn btn-info btn-sm">Update</a>
                             <a th:href="@{/manager/delete(id=${tempJob.id})}" class="btn btn-danger btn-sm" onclick="if (!(confirm('Are you sure you want to delete this Job?'))) return false">Delete</a>
                         </td>
+
                     </tr>
                 </table>
+            </div>
+            <div class="pagination">
+                <li><a th:href="@{'?pageNo='+${currentPage-1}}" class="previous" th:classappend="${currentPage == 1 ? 'disabled' : 'enabled'}">Previous</a></li>
+                <li th:each="i : ${#numbers.sequence(1, totalPage)}">
+                    <a th:href="@{'?pageNo='+${i}}" th:text="${i}" class="page-number" th:classappend="${currentPage == i ? 'active' : ''}"></a>
+                </li>
+
+                <!--Có thể dùng cách này: th:if="${currentPage < totalPage}"-->
+                <li><a th:href="@{'?pageNo='+${currentPage+1}}" class="next" th:classappend="${currentPage == totalPage ? 'disabled' : 'enabled'}">Next</a></li>
+
             </div>
         </div>
     </div>

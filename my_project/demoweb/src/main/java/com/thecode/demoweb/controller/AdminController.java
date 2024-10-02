@@ -74,6 +74,7 @@ public class AdminController {
             // Create user account and store in the database
             userService.save(theWebUser);
 
+
             // Place user in the web http session for later use
             session.setAttribute("user", theWebUser);
 

@@ -10,4 +10,7 @@ import java.util.List;
 public interface JobRepository extends JpaRepository<Job,Integer> {
 
     List<Job> findByTitleContainingOrContentContaining(String titleKeyword, String contentKeyword);
+
+
+    List<Job> findAllByIdUser(Long id);
 }

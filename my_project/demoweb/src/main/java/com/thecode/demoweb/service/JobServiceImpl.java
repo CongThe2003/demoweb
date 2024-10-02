@@ -2,12 +2,14 @@ package com.thecode.demoweb.service;
 
 import com.thecode.demoweb.dao.JobRepository;
 import com.thecode.demoweb.entity.Job;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class JobServiceImpl implements JobService {
@@ -24,8 +26,8 @@ public class JobServiceImpl implements JobService {
     }
 
     @Override
-    public Optional<Job> findById(int id) {
-        return jobRepository.findById(id);
+    public List<Job> findById(Long id) {
+        return jobRepository.findAllByIdUser(id);
     }
 
     @Transactional
@@ -43,6 +45,12 @@ public class JobServiceImpl implements JobService {
     @Override
     public List<Job> findByTitleContainingOrContentContaining(String titleKeyword, String contentKeyword) {
         return jobRepository.findByTitleContainingOrContentContaining(titleKeyword,contentKeyword);
+    }
+
+    @Override
+    public Page<Job> getAllPage(Integer pageNo) {
+        Pageable pageable = PageRequest.of(pageNo - 1,3);
+        return this.jobRepository.findAll(pageable);
     }
 
 
